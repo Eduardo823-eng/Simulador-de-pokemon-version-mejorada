@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pokémon Battle Expert - Sistema Experto</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- ============================================ -->
+    <!-- PANTALLA DE INICIO                           -->
+    <!-- ============================================ -->
+    <div class="welcome-screen" id="welcomeScreen">
+        <div class="welcome-card">
+            <h1>⚡ POKÉMON BATTLE</h1>
+            <p>Sistema Experto con 40+ Pokémon</p>
+            
+            <svg class="pokeball-deco" viewBox="0 0 100 100">
+                <circle cx="50" cy="40" r="35" fill="#ef4444" stroke="#3b82f6" stroke-width="3"/>
+                <path d="M5,50 L95,50" stroke="#3b82f6" stroke-width="3"/>
+                <circle cx="50" cy="50" r="8" fill="#3b82f6"/>
+                <circle cx="50" cy="50" r="3" fill="white"/>
+            </svg>
+
+            <input type="text" id="trainerName" placeholder="Nombre del entrenador" maxlength="20" autofocus>
+            <button class="btn btn-primary" onclick="startGame()" style="margin-top: 20px; width: 100%;">
+                ✨ Comenzar Aventura ✨
+            </button>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- SELECCIÓN DE EQUIPO (40+ POKÉMON)           -->
+    <!-- ============================================ -->
+    <div id="teamSelection" style="display: none; padding: 20px; max-width: 1200px; margin: 0 auto;">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h2 style="font-size: 1.5rem; font-weight: 700; background: linear-gradient(135deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; background-clip: text; color: transparent;">
+                Elige 3 Pokémon, <span id="trainerNameDisplay"></span>
+            </h2>
+            <p style="color: #64748b; margin-top: 8px;">
+                Seleccionados: <span id="selectedCount">0</span>/3 | Pokémon disponibles: <span id="totalCount"></span>
+            </p>
+        </div>
+        <div class="pokemon-selector" id="pokemonSelector"></div>
+        <div style="text-align: center; margin-top: 20px;">
+            <button class="btn btn-primary" onclick="confirmTeam()" style="font-size: 1rem; padding: 14px 40px;">
+                ⚔️ ¡A la Batalla! ⚔️
+            </button>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- CUENTA REGRESIVA PRE-BATALLA                 -->
+    <!-- ============================================ -->
+    <div class="countdown-overlay" id="countdownOverlay">
+        <div class="countdown-container">
+            <div class="countdown-number" id="countdownNumber">3</div>
+            <div class="countdown-text" id="countdownText">¡Prepara tu equipo!</div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- LAYOUT PRINCIPAL DE BATALLA                  -->
+    <!-- ============================================ -->
+    <div class="main-layout" id="battleLayout" style="display: none;">
+        
+        <!-- PANEL DEL ASESOR -->
+        <div class="advisor-panel" id="advisorPanel">
+            <div class="advisor-title">🎯 Asesor de Batalla</div>
+            <div id="adviceContainer">
+                <div class="advice-card">
+                    <div class="advice-header">📊 Esperando batalla</div>
+                    <div class="advice-content">Selecciona tu equipo para comenzar</div>
+                </div>
+            </div>
+            <div style="margin-top: 16px;">
+                <div class="advisor-title">📚 Análisis</div>
+                <div id="battleAnalysis" style="max-height: 180px; overflow-y: auto;"></div>
+            </div>
+        </div>
+
+        <!-- PANTALLA DE BATALLA -->
+        <div class="battle-screen" id="battleScreen">
+            
+            <!-- Timer de turno -->
+            <div class="turn-timer" id="turnTimer" style="display: none;">
+                <div class="timer-text" id="timerText">⏱️ Tu turno - 20s</div>
+                <div class="timer-bar">
+                    <div class="timer-fill" id="timerFill" style="width: 100%;"></div>
+                </div>
+            </div>
+
+            <!-- Campo de batalla -->
+            <div class="battlefield" id="battlefield">
+                <div class="battle-pokemon" id="playerPokemon">
+                    <img id="playerSprite" src="" class="pokemon-sprite-battle">
+                    <div class="hp-container">
+                        <div class="hp-info">
+                            <span id="playerName">---</span>
+                            <span id="playerHPText">-/-</span>
+                        </div>
+                        <div class="hp-bar-outer">
+                            <div class="hp-bar-inner" id="playerHPBar" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="battle-vs">⚔️</div>
+
+                <div class="battle-pokemon" id="enemyPokemon">
+                    <img id="enemySprite" src="" class="pokemon-sprite-battle">
+                    <div class="hp-container">
+                        <div class="hp-info">
+                            <span id="enemyName">---</span>
+                            <span id="enemyHPText">-/-</span>
+                        </div>
+                        <div class="hp-bar-outer">
+                            <div class="hp-bar-inner" id="enemyHPBar" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Movimientos -->
+            <div class="moves-panel">
+                <div class="moves-grid" id="movesGrid"></div>
+            </div>
+
+            <!-- Battle Log -->
+            <div class="battle-log" id="battleLog">
+                <div class="log-entry">🎮 ¡Comienza la batalla!</div>
+                <div class="log-entry">🧠 Asesor Experto activado</div>
+            </div>
+
+            <!-- Controles -->
+            <div class="battle-controls">
+                <button class="btn btn-info" onclick="requestAdvice()">📊 Consejo</button>
+                <button class="btn btn-primary" onclick="switchPokemon()">🔄 Cambiar</button>
+                <button class="btn btn-danger" onclick="surrender()">🏳️ Rendirse</button>
+            </div>
+        </div>
+
+        <!-- EQUIPO DEL JUGADOR -->
+        <div class="team-panel" id="teamPanel">
+            <div class="team-title">🎒 Tu Equipo</div>
+            <div id="teamContainer"></div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- MODAL DE RESULTADO                          -->
+    <!-- ============================================ -->
+    <div class="battle-result" id="battleResult">
+        <div id="resultTitle" style="font-size: 1.8rem; font-weight: 800; margin-bottom: 30px;"></div>
+        <button class="btn btn-primary" onclick="newBattle()" style="font-size: 1rem; padding: 14px 30px;">
+            🔄 Nueva Batalla
+        </button>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- SCRIPT                                       -->
+    <!-- ============================================ -->
+    <script src="script.js"></script>
+</body>
+</html>
